@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from .models import Board
 from .forms import Boardform
 from user.models import User
+from tag.models import Tag
 
 # Create your views here.
 
@@ -26,13 +27,23 @@ def board_write(request):
         if form.is_valid():
             userid = request.session.get('user')
             user = User.objects.get(pk=userid)
+            tags = form.cleaned_data['tags'].split(',')
 
             board = Board() # 모델 객체 생성
             board.title = form.cleaned_data['title'] # cleaned_data 딕셔너리에서 꺼내오기
             board.contents = form.cleaned_data['contents']
             board.writer = user
+            board.save()
 
-            board.save()    
+            for tag in tags:
+                if not tag:
+                    continue
+                # get_or_create -> 조건에 맞는 객체가 있으면 가져오고 없으면 생성
+                # 필요없는 변수를 표현할떄는 언더바(_)
+                _tag, _ = Tag.objects.get_or_create(name=tag)
+                # 객체의 데이터를 추가할 떄는 객체를 생성한 후에 가능(id가 있어야 가능)
+                board.tags.add(_tag)
+
             return redirect('/board/list')
     return render(request, 'board_write.html', {'form': form})
 

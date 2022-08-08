@@ -27,6 +27,7 @@ def register(request):
                 password=make_password(password)
             )
             user.save()
+            return redirect('/')
 
         return render(request, 'register.html', res_data)
 
